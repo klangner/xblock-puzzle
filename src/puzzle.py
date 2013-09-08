@@ -28,6 +28,10 @@ class PuzzleBlock(XBlock):
         """
         html_str = resource_string(__name__, "static/student.html")
         frag = Fragment(unicode(html_str).format(self=self))
+        css_str = resource_string(__name__, "static/css/puzzle.css")
+        frag.add_css(unicode(css_str))        
+        js_str = resource_string(__name__, "static/js/puzzle.js")
+        frag.add_javascript(unicode(js_str))        
         return frag    
 
 
