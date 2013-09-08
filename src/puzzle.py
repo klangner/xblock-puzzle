@@ -31,8 +31,13 @@ class PuzzleBlock(XBlock):
         css_str = resource_string(__name__, "static/css/puzzle.css")
         frag.add_css(unicode(css_str))        
         js_str = resource_string(__name__, "static/js/puzzle.js")
-        frag.add_javascript(unicode(js_str))        
+        frag.add_javascript(unicode(js_str))
+        frag.initialize_js('PuzzleBlock')        
         return frag    
+    
+    @XBlock.json_handler
+    def button_clicked(self, data):
+        return {'response': 'ok'}    
 
 
 @staticmethod
