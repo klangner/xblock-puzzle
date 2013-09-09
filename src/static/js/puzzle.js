@@ -1,5 +1,4 @@
 function PuzzleBlock(runtime, element) {
-	console.log('init');
 	$('.puzzleButton').click(function button_clicked() {
 		$.ajax({
 			type: "POST",
