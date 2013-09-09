@@ -1,3 +1,35 @@
-.puzzle{
-	background-color:yellow;
+.puzzle-container {
+    border: 2px solid black;
+    border-bottom-width: 1px;
+    border-right-width: 1px;
+    overflow: hidden;
+    position: relative;
+}
+
+.mark {
+    position: absolute;
+    visibility: hidden;
+    z-index: 4;
+    width: 35px;
+    height: 34px;
+}
+
+.mark.wrong {
+    background-image: url('resources/puzzle-mark-wrong.png');
+    visibility: visible;
+}
+
+.mark.correct {
+    background-image: url('resources/puzzle-mark-correct.png');
+    visibility: visible;
+}
+
+.puzzle {
+    border: 1px solid black;
+    border-top-width: 0;
+    border-left-width: 0;
+    z-index: 1;
+    float: left;
+    cursor: pointer;
+    position: absolute;
 }

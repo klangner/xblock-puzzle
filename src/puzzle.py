@@ -26,7 +26,7 @@ class PuzzleBlock(XBlock):
         Returns a `Fragment` object specifying the HTML, CSS, and JavaScript
         to display.
         """
-        html_str = resource_string(__name__, "static/student.html")
+        html_str = resource_string(__name__, "static/player.html")
         frag = Fragment(unicode(html_str).format(self=self))
         css_str = resource_string(__name__, "static/css/puzzle.css")
         frag.add_css(unicode(css_str))        
