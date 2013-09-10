@@ -33,3 +33,7 @@
     cursor: pointer;
     position: absolute;
 }
+
+.puzzle-buttons{
+	padding-top:10px;
+}
