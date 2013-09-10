@@ -26,11 +26,11 @@ class PuzzleBlock(XBlock):
         Returns a `Fragment` object specifying the HTML, CSS, and JavaScript
         to display.
         """
-        html_str = resource_string(__name__, "static/player.html")
+        html_str = resource_string(__name__, "static/puzzle/view.html")
         frag = Fragment(unicode(html_str).format(self=self))
-        css_str = resource_string(__name__, "static/css/puzzle.css")
+        css_str = resource_string(__name__, "static/puzzle/puzzle.css")
         frag.add_css(unicode(css_str))        
-        js_str = resource_string(__name__, "static/js/puzzle.js")
+        js_str = resource_string(__name__, "static/puzzle/puzzle.js")
         frag.add_javascript(unicode(js_str))
         frag.initialize_js('PuzzleBlock')        
         return frag    

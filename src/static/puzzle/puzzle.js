@@ -204,7 +204,7 @@ function PuzzleBlock(runtime, element) {
 	        });
 	
 	        addBorderClasses();
-	        Shuffle();
+	        shuffle();
 	    }
 	
 	    /**
@@ -248,7 +248,7 @@ function PuzzleBlock(runtime, element) {
 	        return shuffleSequence;
 	    };
 	
-	    function Shuffle() {
+	    function shuffle() {
 	        var i, iteration,
 	            shuffleSequence, shuffle,
 	            $firstPiece, $secondPiece;
@@ -395,79 +395,6 @@ function PuzzleBlock(runtime, element) {
 	        presenter.configuration.isErrorMode = false;
 	    }
 	
-	    presenter.reset = function() {
-	        presenter.configuration.shouldCalcScore = true;
-	        setNormalMode();
-	        Shuffle();
-	
-	        if (presenter.configuration.isVisibleByDefault) {
-	            presenter.show();
-	        } else {
-	            presenter.hide();
-	        }
-	    };
-	
-	    presenter.getMaxScore = function() {
-	        return 1;
-	    };
-	
-	    presenter.getScore = function() {
-	        var rows = presenter.configuration.rows,
-	            columns = presenter.configuration.columns,
-	            row, col;
-	
-	        for (row = 0; row < rows; row++) {
-	            for (col = 0; col < columns; col++) {
-	                if( board[row][col].attr("position") !=  indexBoard[row][col].attr("position")) {
-	                    return 0;
-	                }
-	            }
-	        }
-	
-	        return presenter.configuration.shouldCalcScore ? 1 : 0;
-	    };
-	
-	    presenter.getErrorCount = function() {
-	        var rows = presenter.configuration.rows,
-	            columns = presenter.configuration.columns,
-	            errors = 0;
-	
-	        for (var row = 0; row < rows; row++) {
-	            for (var col = 0; col < columns; col++) {
-	                if( board[row][col].attr("position") !=  indexBoard[row][col].attr("position")) {
-	                    errors++;
-	                }
-	            }
-	        }
-	
-	        return presenter.configuration.shouldCalcScore ? errors : 0;
-	    };
-	
-	    presenter.setWorkMode = function() {
-	        setNormalMode();
-	    };
-	
-	    presenter.setShowErrorsMode = function() {
-	        var rows = presenter.configuration.rows,
-	            columns = presenter.configuration.columns,
-	            row, col;
-	
-	        presenter.configuration.shouldCalcScore = true;
-	
-	        for (row = 0; row < rows; row++) {
-	            for (col = 0; col < columns; col++) {
-	                var isEqual = board[row][col].attr("position") != indexBoard[row][col].attr("position");
-	                if(isEqual) { //wrong answer
-	                    indexBoard[row][col].addClass('wrong');
-	                }else{
-	                    indexBoard[row][col].addClass('correct');
-	                }
-	            }
-	        }
-	
-	        presenter.configuration.isErrorMode = true;
-	    };
-	
 	    presenter.run = function(view, model) {
 	        Container = view;
 	        intPuzzleWidth = model.width;
@@ -491,9 +418,6 @@ function PuzzleBlock(runtime, element) {
 	            });
 	        }
 	
-	        if (!presenter.configuration.isVisibleByDefault) {
-	            presenter.hide();
-	        }
 	    };
 	
 	    presenter.validateModel = function (model) {
@@ -510,14 +434,6 @@ function PuzzleBlock(runtime, element) {
 	            addonID: model.ID
 	        };
 	    };
-	
-	    presenter.isAllOK = function () {
-	        presenter.configuration.shouldCalcScore = true;
-	        return presenter.getMaxScore() === presenter.getScore() && presenter.getErrorCount() === 0;
-	    };
-	
-	    function sendAllOKEvent () {
-	    }
 	
 	    return presenter;
 	}

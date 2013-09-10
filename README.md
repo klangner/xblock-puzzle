@@ -1,5 +1,7 @@
 # Puzzle XBlock module for EDX platform
 
+![Preview](/tree/master/doc/preview.png)
+
 ## XML Syntax
 
 ```xml
