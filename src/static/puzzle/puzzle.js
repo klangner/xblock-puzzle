@@ -1,4 +1,19 @@
 function PuzzleBlock(runtime, element) {
+
+	/** Run puzzle */
+	const view = $('.puzzle-container') 
+	const model = {	
+		'Image':'https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Puzzle-historical-map-1639.JPG/320px-Puzzle-historical-map-1639.JPG',
+		'width': 640,
+		'height': 480,
+		'cols':4,
+		'rows':4
+	}
+	const puzzleActivity = new PuzzlePresenter(view, model);
+
+	/** 
+	 * Connect buttons to send result to the server 
+	 */
 	$('.puzzleButton').click(function button_clicked() {
 		$.ajax({
 			type: "POST",
@@ -10,14 +25,19 @@ function PuzzleBlock(runtime, element) {
 	    });
 	});
 	
-	function createPuzzle() {
-	    var presenter = function() {};
 	
+	/** 
+	 * Puzzle presenter class  
+	 */
+	function PuzzlePresenter(puzzleView, puzzleModel) {
+
+	    const view = puzzleView;
+	    const model = puzzleModel;
+        const intPuzzleWidth = model.width;
+        const intPuzzleHeight = model.height;
+
 	    var board = []; // Array that will hold the 2-dimensional representation of the board.
 	    var indexBoard = [];
-	
-	    var intPuzzleWidth = 0;
-	    var intPuzzleHeight = 0;
 	
 	    var animation = false;
 	    var clickNumber = 0; //Check if this is first or second click
@@ -33,11 +53,7 @@ function PuzzleBlock(runtime, element) {
 	    var puzzleOuterHeight = 0;
 	    var leftOffset = 0;
 	    var topOffset = 0;
-	
 	    var puzzle = null;
-	
-	    var Container;
-	    var jImg;
 	    var mark;
 	
 	    function getElementDimensions(element) {
@@ -95,12 +111,12 @@ function PuzzleBlock(runtime, element) {
 	    }
 	
 	    function getOuterDistances() {
-	        var containerDimensions = getElementDimensions(Container);
+	        var containerDimensions = getElementDimensions(view);
 	        var containerDistances = calculateOuterDistance(containerDimensions);
 	
 	        var puzzle = $(document.createElement("div"));
 	        puzzle.addClass('puzzle');
-	        $(Container).append(puzzle);
+	        view.append(puzzle);
 	        var puzzleDimensions = getElementDimensions(puzzle);
 	        var puzzleDistances = calculateOuterDistance(puzzleDimensions);
 	        $(puzzle).remove();
@@ -114,7 +130,7 @@ function PuzzleBlock(runtime, element) {
 	    function getMarkDimensions() {
 	        var tempMark = $(document.createElement('div'));
 	        $(tempMark).addClass('mark').addClass('correct');
-	        $(Container).append(tempMark);
+	        view.append(tempMark);
 	
 	        var markWidth = $(tempMark).width();
 	        var markHeight = $(tempMark).height();
@@ -128,22 +144,18 @@ function PuzzleBlock(runtime, element) {
 	    }
 	
 	    function addBorderClasses() {
-	        var rows = presenter.configuration.rows,
-	            columns = presenter.configuration.columns,
-	            h, v;
-	
-	        for (h = 0; h < columns; h++) {
+	        for (var h = 0; h < model.columns; h++) {
 	            $(board[0][h]).addClass('top');
-	            $(board[rows - 1][h]).addClass('bottom');
+	            $(board[model.rows - 1][h]).addClass('bottom');
 	        }
 	
-	        for (v = 0; v < rows; v++) {
+	        for (var v = 0; v < model.rows; v++) {
 	            $(board[v][0]).addClass('left');
-	            $(board[v][columns - 1]).addClass('right');
+	            $(board[v][model.columns - 1]).addClass('right');
 	        }
 	    }
 	
-	    function initPuzzle(width, height, rows, columns) {
+	    function initPuzzle(width, height, rows, columns, imageNode) {
 	        var outerDistances = getOuterDistances();
 	        var markDimensions = getMarkDimensions();
 	        var containerWidth = width - outerDistances.container.horizontal;
@@ -173,12 +185,12 @@ function PuzzleBlock(runtime, element) {
 	                });
 	                mark.attr("position", row + "-" + col);
 	                indexBoard[row][col] = mark;
-	                Container.append(mark);
+	                view.append(mark);
 	
 	                puzzle = $(document.createElement("div"));
 	                puzzle.addClass('puzzle');
 	                puzzle.css({
-	                    backgroundImage: "url( '" + jImg.attr("src") + "' )",
+	                    backgroundImage: "url( '" + imageNode.attr("src") + "' )",
 	                    backgroundSize: width + "px " + height + "px" ,
 	                    backgroundRepeat: "no-repeat",
 	                    backgroundPosition: (
@@ -194,11 +206,11 @@ function PuzzleBlock(runtime, element) {
 	                puzzle.attr("href", "javascript:void( 0 );").click(clickHandler);
 	                puzzle.attr("position", row + "-" + col);
 	                board[row][col] = puzzle;
-	                Container.append(puzzle);
+	                view.append(puzzle);
 	            }
 	        }
 	
-	        Container.css({
+	        view.css({
 	            width: (puzzleOuterWidth * columns) + 'px',
 	            height: (puzzleOuterHeight * rows) + 'px'
 	        });
@@ -216,7 +228,7 @@ function PuzzleBlock(runtime, element) {
 	     * shuffled once, but the whole procedure should be repeated at least twice.
 	     */
 	
-	    presenter.getShuffleSequence = function (array) {
+	    function getShuffleSequence(array) {
 	        var flatArray = [],
 	            shuffleSequence = [],
 	            row, column, counter, index;
@@ -255,9 +267,8 @@ function PuzzleBlock(runtime, element) {
 	
 	        animation = false; // Shuffling should be without animation
 	
-	
 	        for (iteration = 0; iteration < 3; iteration++) {
-	            shuffleSequence = presenter.getShuffleSequence(board);
+	            shuffleSequence = getShuffleSequence(board);
 	
 	            for (i = 0; i < shuffleSequence.length; i++) {
 	                shuffle = shuffleSequence[i];
@@ -321,7 +332,6 @@ function PuzzleBlock(runtime, element) {
 	    }
 	
 	    function clickHandler(event) {
-	        if (presenter.configuration.isErrorMode) return;
 	
 	        var Piece = $(this);
 	        // Check to see if we are in the middle of an animation.
@@ -346,7 +356,6 @@ function PuzzleBlock(runtime, element) {
 	            PieceOld.removeClass('selected');
 	
 	            if (isSamePiece(PieceOld, Piece)) return;
-	            if (!event.triggered) presenter.configuration.shouldCalcScore = true;
 	
 	            board[PiecePos2.row][PiecePos2.col] = PieceOld;
 	            board[PiecePos.row][PiecePos.col] = Piece;
@@ -374,81 +383,37 @@ function PuzzleBlock(runtime, element) {
 	            }
 	
 	            replaceBorderClasses(board[PiecePos.row][PiecePos.col], board[PiecePos2.row][PiecePos2.col]);
-	
-	            if (!event.triggered && presenter.isAllOK()) {
-	                sendAllOKEvent();
-	            }
 	        }
 	    }
 	
-	    function setNormalMode() {
-	        var rows = presenter.configuration.rows,
-	            columns = presenter.configuration.columns,
-	            rowIndex, colIndex;
-	
-	        for (rowIndex = 0; rowIndex < rows; rowIndex++) {
-	            for (colIndex = 0; colIndex < columns; colIndex++) {
+	    function clearPieceCssStyle() {
+	        for (var rowIndex = 0; rowIndex < model.rows; rowIndex++) {
+	            for (var colIndex = 0; colIndex < model.columns; colIndex++) {
 	                indexBoard[rowIndex][colIndex].removeClass('wrong').removeClass('correct');
 	            }
 	        }
-	
-	        presenter.configuration.isErrorMode = false;
 	    }
 	
-	    presenter.run = function(view, model) {
-	        Container = view;
-	        intPuzzleWidth = model.width;
-	        intPuzzleHeight = model.height;
-	        var width = model.width;
-	        var height = model.height;
+	    function run() {
 	
-	        presenter.$view = $(view);
-	        presenter.configuration = presenter.validateModel(model);
+	        var imageNode = view.find( "img:first" );
+	        imageNode.attr('src', model.Image);
+	        imageNode.attr('height', model.height);
+	        imageNode.attr('width', model.width);
 	
-	        jImg = Container.find( "img:first" );
-	        jImg.attr('src', model.Image);
-	        jImg.attr('height', height);
-	        jImg.attr('width', width);
-	
-	        if (jImg.complete) { // The image has loaded so call Init.
-	            InitPuzzle(width, height);
+	        if (imageNode.complete) { // The image has loaded so call Init.
+	        	initPuzzle(model.width, model.height);
 	        } else { // The image has not loaded so set an onload event handler to call Init.
-	            jImg.load(function() {
-	                initPuzzle(width, height, model.rows, model.cols);
+	        	imageNode.load(function() {
+	                initPuzzle(model.width, model.height, model.rows, model.cols, imageNode);
 	            });
 	        }
 	
 	    };
-	
-	    presenter.validateModel = function (model) {
-	        var isVisible = true;
-	
-	        return {
-	            isValid: true,
-	            isErrorMode: false,
-	            isVisible: isVisible,
-	            isVisibleByDefault: isVisible,
-	            shouldCalcScore: false,
-	            columns: model.cols,
-	            rows: model.rows,
-	            addonID: model.ID
-	        };
-	    };
-	
-	    return presenter;
+	    
+	    
+	    run();
 	}
-
-	// Run puzzle
-	var puzzle = createPuzzle()
-	var view = $('.puzzle-container') 
-	var model = {	
-		'Image':'https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Puzzle-historical-map-1639.JPG/320px-Puzzle-historical-map-1639.JPG',
-		'width': 640,
-		'height': 480,
-		'cols':4,
-		'rows':4
-	}
-	puzzle.run(view, model)
 
 	
 }
