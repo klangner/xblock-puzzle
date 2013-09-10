@@ -24,7 +24,7 @@
     visibility: visible;
 }
 
-.puzzle {
+.puzzle-piece {
     border: 1px solid black;
     border-top-width: 0;
     border-left-width: 0;

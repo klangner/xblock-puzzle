@@ -1,40 +1,25 @@
 function PuzzleBlock(runtime, element) {
 
 	/** Run puzzle */
-	const view = $('.puzzle-container') 
-	const model = {	
+	const testModel = {	
 		'Image':'https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Puzzle-historical-map-1639.JPG/320px-Puzzle-historical-map-1639.JPG',
 		'width': 640,
 		'height': 480,
 		'cols':4,
 		'rows':4
 	}
-	const puzzleActivity = new PuzzlePresenter(view, model);
+	
+	createPuzzle($(element).find(".puzzle-container:first"), testModel);
+	connectButtonHandlers();
+	
 
 	/** 
-	 * Connect buttons to send result to the server 
+	 * Create puzzle  
 	 */
-	$('.puzzleButton').click(function button_clicked() {
-		$.ajax({
-			type: "POST",
-	        url: runtime.handler_url('button_clicked'),
-	        data: JSON.stringify({watched: true}),
-	        success: function(result) {
-	        	console.log(result);
-	        }
-	    });
-	});
-	
-	
-	/** 
-	 * Puzzle presenter class  
-	 */
-	function PuzzlePresenter(puzzleView, puzzleModel) {
+	function createPuzzle(puzzleView, puzzleModel) {
 
 	    const view = puzzleView;
 	    const model = puzzleModel;
-        const intPuzzleWidth = model.width;
-        const intPuzzleHeight = model.height;
 
 	    var board = []; // Array that will hold the 2-dimensional representation of the board.
 	    var indexBoard = [];
@@ -56,9 +41,103 @@ function PuzzleBlock(runtime, element) {
 	    var puzzle = null;
 	    var mark;
 	
-	    function getElementDimensions(element) {
-	        element = $(element);
+	    loadImageAndInitialize();
+	    
+	    /** Load image and initialize puzzle */
+	    function loadImageAndInitialize() {
+	    	
+	        var imageNode = view.find( "img:first" );
+        	imageNode.load(function() {
+                initPuzzle(model.width, model.height, model.rows, model.cols, imageNode);
+            });
+	        imageNode.attr('src', model.Image);
+	        imageNode.attr('height', model.height);
+	        imageNode.attr('width', model.width);
+	    };
+
+	    /** Initialize puzzle */
+	    function initPuzzle(width, height, rows, columns, imageNode) {
+	        var outerDistances = getOuterDistances();
+	        var markDimensions = getMarkDimensions();
+	        var containerWidth = width - outerDistances.container.horizontal;
+	        var containerHeight = height - outerDistances.container.vertical;
 	
+	        puzzleWidth =  parseInt(containerWidth / columns - outerDistances.puzzle.horizontal, 10);
+	        puzzleOuterWidth = puzzleWidth + outerDistances.puzzle.horizontal;
+	        puzzleHeight = parseInt(containerHeight / rows - outerDistances.puzzle.vertical, 10);
+	        puzzleOuterHeight = puzzleHeight + outerDistances.puzzle.vertical;
+	
+	        topOffset = outerDistances.container.paddingTop;
+	        leftOffset = outerDistances.container.paddingLeft;
+	
+	        var markHorizontalOffset = (puzzleOuterWidth - markDimensions.width) / 2;
+	        var markVerticalOffset = (puzzleOuterHeight - markDimensions.height) / 2;
+	
+	        for (var row = 0; row < rows; row++) {
+	            board[row] = [];
+	            indexBoard[row] = [];
+	
+	            for (var col = 0; col < columns; col++) {
+	                mark = $(document.createElement('div'));
+	                mark.addClass('mark');
+	                mark.css({
+	                    top: ((puzzleHeight * row + markVerticalOffset) + "px"),
+	                    left: ((puzzleWidth * col + markHorizontalOffset) + "px")
+	                });
+	                mark.attr("position", row + "-" + col);
+	                indexBoard[row][col] = mark;
+	                view.append(mark);
+	
+	                puzzle = $(document.createElement("div"));
+	                puzzle.addClass('puzzle-piece');
+	                puzzle.css({
+	                    backgroundImage: "url( '" + imageNode.attr("src") + "' )",
+	                    backgroundSize: width + "px " + height + "px" ,
+	                    backgroundRepeat: "no-repeat",
+	                    backgroundPosition: (
+	                        (col * -puzzleWidth) + "px " +
+	                            (row * -puzzleHeight) + "px"
+	                        ),
+	                    top: ((puzzleOuterHeight * row + topOffset) + "px"),
+	                    left: ((puzzleOuterWidth * col + leftOffset) + "px"),
+	                    width: puzzleWidth + 'px',
+	                    height: puzzleHeight + 'px'
+	                });
+	
+	                puzzle.attr("href", "javascript:void( 0 );").click(clickHandler);
+	                puzzle.attr("position", row + "-" + col);
+	                board[row][col] = puzzle;
+	                view.append(puzzle);
+	            }
+	        }
+	
+	        view.css({
+	            width: (puzzleOuterWidth * columns) + 'px',
+	            height: (puzzleOuterHeight * rows) + 'px'
+	        });
+	
+	        addBorderClasses();
+	        shuffle();
+	    }
+	
+	    function getOuterDistances() {
+	        var containerDimensions = getElementDimensions(view);
+	        var containerDistances = calculateOuterDistance(containerDimensions);
+	
+	        var puzzle = $(document.createElement("div"));
+	        puzzle.addClass('puzzle-piece');
+	        view.append(puzzle);
+	        var puzzleDimensions = getElementDimensions(puzzle);
+	        var puzzleDistances = calculateOuterDistance(puzzleDimensions);
+	        puzzle.remove();
+	
+	        return {
+	            container: containerDistances,
+	            puzzle: puzzleDistances
+	        };
+	    }
+	
+	    function getElementDimensions(element) {
 	        return {
 	            border:{
 	                top:parseInt(element.css('border-top-width'), 10),
@@ -110,23 +189,6 @@ function PuzzleBlock(runtime, element) {
 	        };
 	    }
 	
-	    function getOuterDistances() {
-	        var containerDimensions = getElementDimensions(view);
-	        var containerDistances = calculateOuterDistance(containerDimensions);
-	
-	        var puzzle = $(document.createElement("div"));
-	        puzzle.addClass('puzzle');
-	        view.append(puzzle);
-	        var puzzleDimensions = getElementDimensions(puzzle);
-	        var puzzleDistances = calculateOuterDistance(puzzleDimensions);
-	        $(puzzle).remove();
-	
-	        return {
-	            container: containerDistances,
-	            puzzle: puzzleDistances
-	        };
-	    }
-	
 	    function getMarkDimensions() {
 	        var tempMark = $(document.createElement('div'));
 	        $(tempMark).addClass('mark').addClass('correct');
@@ -155,70 +217,6 @@ function PuzzleBlock(runtime, element) {
 	        }
 	    }
 	
-	    function initPuzzle(width, height, rows, columns, imageNode) {
-	        var outerDistances = getOuterDistances();
-	        var markDimensions = getMarkDimensions();
-	        var containerWidth = width - outerDistances.container.horizontal;
-	        var containerHeight = height - outerDistances.container.vertical;
-	
-	        puzzleWidth =  parseInt(containerWidth / columns - outerDistances.puzzle.horizontal, 10);
-	        puzzleOuterWidth = puzzleWidth + outerDistances.puzzle.horizontal;
-	        puzzleHeight = parseInt(containerHeight / rows - outerDistances.puzzle.vertical, 10);
-	        puzzleOuterHeight = puzzleHeight + outerDistances.puzzle.vertical;
-	
-	        topOffset = outerDistances.container.paddingTop;
-	        leftOffset = outerDistances.container.paddingLeft;
-	
-	        var markHorizontalOffset = (puzzleOuterWidth - markDimensions.width) / 2;
-	        var markVerticalOffset = (puzzleOuterHeight - markDimensions.height) / 2;
-	
-	        for (var row = 0; row < rows; row++) {
-	            board[row] = [];
-	            indexBoard[row] = [];
-	
-	            for (var col = 0; col < columns; col++) {
-	                mark = $(document.createElement('div'));
-	                mark.addClass('mark');
-	                mark.css({
-	                    top: ((puzzleHeight * row + markVerticalOffset) + "px"),
-	                    left: ((puzzleWidth * col + markHorizontalOffset) + "px")
-	                });
-	                mark.attr("position", row + "-" + col);
-	                indexBoard[row][col] = mark;
-	                view.append(mark);
-	
-	                puzzle = $(document.createElement("div"));
-	                puzzle.addClass('puzzle');
-	                puzzle.css({
-	                    backgroundImage: "url( '" + imageNode.attr("src") + "' )",
-	                    backgroundSize: width + "px " + height + "px" ,
-	                    backgroundRepeat: "no-repeat",
-	                    backgroundPosition: (
-	                        (col * -puzzleWidth) + "px " +
-	                            (row * -puzzleHeight) + "px"
-	                        ),
-	                    top: ((puzzleOuterHeight * row + topOffset) + "px"),
-	                    left: ((puzzleOuterWidth * col + leftOffset) + "px"),
-	                    width: puzzleWidth + 'px',
-	                    height: puzzleHeight + 'px'
-	                });
-	
-	                puzzle.attr("href", "javascript:void( 0 );").click(clickHandler);
-	                puzzle.attr("position", row + "-" + col);
-	                board[row][col] = puzzle;
-	                view.append(puzzle);
-	            }
-	        }
-	
-	        view.css({
-	            width: (puzzleOuterWidth * columns) + 'px',
-	            height: (puzzleOuterHeight * rows) + 'px'
-	        });
-	
-	        addBorderClasses();
-	        shuffle();
-	    }
-	
 	    /**
 	     * Fisher-Yates Shuffle algorithm: https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
 	     * Original algorithm is based on flatt, one-dimension array. For our purposes (working on two-dimension arrays)
@@ -228,7 +226,7 @@ function PuzzleBlock(runtime, element) {
 	     * shuffled once, but the whole procedure should be repeated at least twice.
 	     */
 	
-	    function getShuffleSequence(array) {
+	    function shuffleArray(array) {
 	        var flatArray = [],
 	            shuffleSequence = [],
 	            row, column, counter, index;
@@ -268,7 +266,7 @@ function PuzzleBlock(runtime, element) {
 	        animation = false; // Shuffling should be without animation
 	
 	        for (iteration = 0; iteration < 3; iteration++) {
-	            shuffleSequence = getShuffleSequence(board);
+	            shuffleSequence = shuffleArray(board);
 	
 	            for (i = 0; i < shuffleSequence.length; i++) {
 	                shuffle = shuffleSequence[i];
@@ -394,26 +392,22 @@ function PuzzleBlock(runtime, element) {
 	        }
 	    }
 	
-	    function run() {
-	
-	        var imageNode = view.find( "img:first" );
-	        imageNode.attr('src', model.Image);
-	        imageNode.attr('height', model.height);
-	        imageNode.attr('width', model.width);
-	
-	        if (imageNode.complete) { // The image has loaded so call Init.
-	        	initPuzzle(model.width, model.height);
-	        } else { // The image has not loaded so set an onload event handler to call Init.
-	        	imageNode.load(function() {
-	                initPuzzle(model.width, model.height, model.rows, model.cols, imageNode);
-	            });
-	        }
-	
-	    };
-	    
-	    
-	    run();
 	}
 
-	
+	/** 
+	 * Connect buttons to send result to the server 
+	 */
+	function connectButtonHandlers(){
+		$('.puzzleButton').click(function button_clicked() {
+			$.ajax({
+				type: "POST",
+		        url: runtime.handler_url('button_clicked'),
+		        data: JSON.stringify({watched: true}),
+		        success: function(result) {
+		        	console.log(result);
+		        }
+		    });
+		});
+	}
+		
 }
