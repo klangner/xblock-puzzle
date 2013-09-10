@@ -1,6 +1,6 @@
 # Puzzle XBlock module for EDX platform
 
-![Preview](/tree/master/doc/preview.png)
+![Preview](https://raw.github.com/klangner/xblock-puzzle/master/doc/preview.png)
 
 ## XML Syntax
 
