@@ -1,39 +1,31 @@
-.puzzle-container {
-    border: 2px solid black;
-    border-bottom-width: 1px;
-    border-right-width: 1px;
-    overflow: hidden;
-    position: relative;
+.puzzle-block {
 }
 
-.mark {
-    position: absolute;
-    visibility: hidden;
-    z-index: 4;
-    width: 35px;
-    height: 34px;
-}
-
-.mark.wrong {
-    background-image: url('resources/puzzle-mark-wrong.png');
-    visibility: visible;
-}
-
-.mark.correct {
-    background-image: url('resources/puzzle-mark-correct.png');
-    visibility: visible;
+.puzzle-module{
+	background-color: black;
+	position: relative;
+	overflow:hidden;
 }
 
 .puzzle-piece {
     border: 1px solid black;
-    border-top-width: 0;
-    border-left-width: 0;
     z-index: 1;
-    float: left;
     cursor: pointer;
     position: absolute;
+    background-image: url('%s');
+	background-repeat: no-repeat;          
+    background-size: %dpx %dpx;
 }
 
 .puzzle-buttons{
 	padding-top:10px;
+}
+
+.puzzle-piece-selected{
+	border: 1px solid blue;
+	z-index: 2;
+	opacity:0.5;
+}
+
+.puzzle-feedback{
 }

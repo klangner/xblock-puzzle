@@ -1,1 +1,5 @@
+# 3rd-party needs
+PIL
+
+# Our own
 -e .
