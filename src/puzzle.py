@@ -12,6 +12,7 @@ from xblock.fragment import Fragment
 import Image
 import cStringIO
 import urllib
+import json
 #from webob import Response
 
 
@@ -37,19 +38,27 @@ class PuzzleBlock(XBlock):
         to display.
         """
         html_str = resource_string(__name__, "static/puzzle/view.html")
-        frag = Fragment(unicode(html_str))
+        frag = Fragment(unicode(html_str).format(data=self._json_params()))
         css_str = resource_string(__name__, "static/puzzle/puzzle.css")
-        image_url = self.runtime.handler_url(self, 'image')
-        frag.add_css(unicode(css_str % (image_url, self.width, self.height)))       
+        frag.add_css(unicode(css_str))       
         frag.add_javascript_url('http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.1/underscore-min.js') 
         js_str = resource_string(__name__, "static/puzzle/puzzle.js")
-        frag.add_javascript(unicode(js_str % (self.width, self.height, self.cols, self.rows)))
+        frag.add_javascript(unicode(js_str))
         frag.initialize_js('PuzzleBlock')        
-        return frag    
+        return frag   
+    
+    def _json_params(self):
+        return json.dumps({
+                           'image': self.runtime.handler_url(self, 'image'),
+                           'width': self.width,
+                           'height': self.height,
+                           'rows': self.rows,
+                           'columns': self.cols,
+                           }) 
     
     @XBlock.json_handler
     def check(self, data):
-        return {'response': 'ok'}    
+        return {'image': self.runtime.handler_url(self, 'image')}    
     
     @XBlock.json_handler
     def show_answer(self, data):
@@ -70,14 +79,15 @@ class PuzzleBlock(XBlock):
         return response
     
     
-@staticmethod
-def workbench_scenarios():
-    """A canned scenario for display in the workbench."""
-    return [
-        ("Puzzle demo",
-        """\
-            <vertical>
-                <puzzle imageURL="upload/puzzle.png" cols="4" rows="5"/>
-            </vertical>
-         """)
-    ]
+    @staticmethod
+    def workbench_scenarios():
+        """A canned scenario for display in the workbench."""
+        return [
+            ("Puzzle demo",
+            """\
+                <vertical>
+                    <puzzle imageURL="http://www.bluenotepad.com/media/images/welcome.jpg" cols="4" rows="5"/>
+                    <puzzle imageURL="https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Puzzle-historical-map-1639.JPG/320px-Puzzle-historical-map-1639.JPG" cols="4" rows="5"/>
+                </vertical>
+             """)
+        ]

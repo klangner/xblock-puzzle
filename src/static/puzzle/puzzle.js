@@ -1,16 +1,17 @@
 function PuzzleBlock(runtime, element) {
 
-	/** Run puzzle */
-	const testModel = {	
-		width: %d,
-		height: %d,
-		columns: %d,
-		rows: %d
-	}
-	
-	var presenter = new PuzzlePresenter(testModel, $(element).find(".puzzle-module:first"));
+	const model = loadModel($(element).find(".puzzle-data:first"));
+	var presenter = new PuzzlePresenter(model, $(element).find(".puzzle-module:first"));
 	presenter.refresh();
 	connectButtonHandlers($(element).find(".puzzle-buttons:first"), presenter);
+
+	
+	/**
+	 * Load model from html div data
+	 */
+	function loadModel(div){
+		return eval('(' + div.text() + ')');
+	}
 	
 	/**
 	 * Presenter responsible for logic of the puzzle module
@@ -46,7 +47,8 @@ function PuzzleBlock(runtime, element) {
 				width: model.width || 640,
 				height: model.height || 480,
 				columns: model.columns || 4,
-				rows: model.rows || 4
+				rows: model.rows || 4,
+				image: model.image || ''
 			};
 		}
 		
@@ -79,6 +81,8 @@ function PuzzleBlock(runtime, element) {
                 top: pieceHeight*row + "px",
                 width: pieceWidth + 'px',
                 height: pieceHeight + 'px',
+                backgroundImage: "url('" + _model.image + "')",
+                backgroundSize: _model.width + "px " + model.height + "px",
                 backgroundPosition: (column*-pieceWidth) + "px " + (row*-pieceHeight) + "px"
             });
             piece.click(function(){pieceClicked(piece);});

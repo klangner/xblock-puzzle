@@ -12,9 +12,7 @@
     z-index: 1;
     cursor: pointer;
     position: absolute;
-    background-image: url('%s');
 	background-repeat: no-repeat;          
-    background-size: %dpx %dpx;
 }
 
 .puzzle-buttons{
