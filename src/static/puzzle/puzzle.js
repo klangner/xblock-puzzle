@@ -3,7 +3,7 @@ function PuzzleBlock(runtime, element) {
 	const model = loadModel($(element).find(".puzzle-data:first"));
 	var presenter = new PuzzlePresenter(model, $(element).find(".puzzle-module:first"));
 	presenter.refresh();
-	connectButtonHandlers($(element).find(".puzzle-buttons:first"), presenter);
+	connectButtonHandlers($(element).find(".puzzle-buttons:first"), presenter, model);
 
 	
 	/**
@@ -23,8 +23,6 @@ function PuzzleBlock(runtime, element) {
 		const pieceWidth = _model.width/_model.columns;
 		const pieceHeight = _model.height/_model.rows;
 		var _selectedPiece = null;
-		/** Contains current pieces order */
-		var _currentOrder = [];
 		
 		/**
 		 * Reload puzzle.
@@ -37,18 +35,18 @@ function PuzzleBlock(runtime, element) {
 		/**
 		 * Return current order of pieces
 		 */
-		this.getPiecesOrder = function(){
-			return _currentOrder;
+		this.getPieces = function(){
+			return _.map(_view.children(), getPieceData);
 		}
 		
 		/** Ensure that model has valid parameters */
 		function validateModel(model){
 			return {
-				width: model.width || 640,
-				height: model.height || 480,
-				columns: model.columns || 4,
-				rows: model.rows || 4,
-				image: model.image || ''
+				width: model.width > 10 ? model.width : 640,
+				height: model.height > 10 ? model.height : 480,
+				columns: model.columns > 1 ? model.columns : 4,
+				rows: model.rows > 1 ? model.rows : 4,
+				image: model.image + "&" + new Date().getTime()
 			};
 		}
 		
@@ -106,23 +104,42 @@ function PuzzleBlock(runtime, element) {
 			var top1 = piece1.css('top');
 			piece1.css({left:piece2.css('left'), top:piece2.css('top')});
 			piece2.css({left:left1, top:top1});
-			swap(_currentOrder, piece1.order, piece2.order);
 		}
 
-		function swap(list, index1, index2){
-			var tmp = list[index1]; 
-			list[index1] = list[index2];
-			list[index2] = tmp;
+		function getPieceData(element){
+			var piece = $(element);
+			piece.row = Math.floor((piece.position().top+1) / piece.height());
+			piece.col = Math.floor((piece.position().left+1) / piece.width());
+			return piece;
 		}
 	}
 	
 	
-	function connectButtonHandlers(button_panel, presenter){
+	function connectButtonHandlers(button_panel, presenter, model){
 		var checkButton = $(button_panel.find("button")[0]);
 		checkButton.click(function() {
-			console.log("Order: " + presenter.getPiecesOrder());
+			var column_count = model.columns;
+			var order = _.map(presenter.getPieces(), function(p){return p.row*column_count + p.col});
+			console.log(order);
+			$.ajax({
+				type: "POST",
+		        url: runtime.handler_url('check'),
+		        data: JSON.stringify(order),
+		        success: function(response) {
+		        	console.log(response);
+		            result = eval(response);
+		            showFeedback(result.score, result.errors);
+		        }
+			});		
 		});
+
+		function showFeedback(score, errors){
+			var feedbackPanel = button_panel.find(".puzzle-feedback:first");
+			if(score > 0) feedbackPanel.text('Correct!');
+			else feedbackPanel.text('Sorry there are ' + _.size(errors) + " errors.");
+		}
 	}
+	
 	
 	/**
 	 * Utility functions
