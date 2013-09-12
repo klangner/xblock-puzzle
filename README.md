@@ -5,19 +5,18 @@
 ## XML Syntax
 
 ```xml
-<puzzle image="upload/puzzle.png" cols="4" rows="5"/>
+  <puzzle image="upload/puzzle.png" cols="4" rows="5"/>
 ```
 
 ## Instalation
 
-* Install XBlock from https://github.com/edx/XBlock
-* Get puzzle source from https://github.com/klangner/xblock-puzzle
+1. Install XBlock from https://github.com/edx/XBlock
+2. Install puzzle
     
+```bash
     $ git clone https://github.com/klangner/xblock-puzzle
-
-* Install puzzle
-
     $ pip -r requirements.txt
+```
 
-* Now run XBlock workbench and 
+4. Run installed XBlock Workbench.
 
