@@ -33,7 +33,7 @@ class PuzzleBlock(XBlock):
     order = List(help="Correct order of elements", default=[], scope=Scope.user_state)
     
     def student_view(self, context):
-        self.order = self._create_random_order()
+        self.order = random.shuffle(list(range(self.rows*self.cols)))
         html_str = resource_string(__name__, "static/puzzle/view.html")
         frag = Fragment(unicode(html_str).format(data=self._json_params()))
         frag.add_css(unicode(resource_string(__name__, "static/puzzle/puzzle.css")))       
@@ -51,11 +51,6 @@ class PuzzleBlock(XBlock):
                            'columns': self.cols,
                            })
         
-    def _create_random_order(self):
-        order = [i for i in range(self.rows*self.cols)]
-        random.shuffle(order)
-        return order
-    
     @XBlock.json_handler
     def check(self, data):
         score = 0
