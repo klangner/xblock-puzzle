@@ -15,7 +15,8 @@
     
 ```bash
     $ git clone https://github.com/klangner/xblock-puzzle
-    $ pip -r requirements.txt
+    $ cd xblock-puzzle/src
+    $ pip install -r requirements.txt
 ```
 
 4. Run installed XBlock Workbench.
